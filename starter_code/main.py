@@ -4,7 +4,7 @@ import os, argparse
 import numpy as np
 from Model import MyModel
 from DataLoader import load_data, train_valid_split
-from DataLoader import load_testing_images, trainset_load, testset_load
+from DataLoader import load_testing_images
 from Configure import model_configs, training_configs
 from ImageUtils import visualize, transform_data, transform_val_data, transform_test_data
 
@@ -12,7 +12,8 @@ from ImageUtils import visualize, transform_data, transform_val_data, transform_
 parser = argparse.ArgumentParser()
 parser.add_argument("mode", help="train, test or predict")
 parser.add_argument("data_dir", help="path to the data")
-#parser.add_argument("--save_dir", help="path to save the results")
+parser.add_argument("--pred_data_dir", default="../data2024/private_test_images_2024.npy", help="path to private test data")
+parser.add_argument("--result_dir", default="../data2024", help="path to predictions data")
 args = parser.parse_args()
 
 if __name__ == '__main__':
@@ -24,58 +25,41 @@ if __name__ == '__main__':
 		x_train, y_train, x_valid, y_valid = train_valid_split(x_train, y_train)
 
 		trainloader, valloader = transform_data(x_train, y_train, x_valid, y_valid)
-
-		# print(x_train.shape, y_train.shape, x_valid.shape, y_valid.shape, x_test.shape, y_test.shape)
-
-		# dataiter = iter(trainloader)
-		# images, labels = dataiter.next()
-		# print(type(images))
-		# print(images.shape)
-		# print(labels.shape)
-  
-		# for i, (images, labels) in enumerate(valloader):
-		# 	print(type(images))
-		# 	print(images.shape)
-		# 	print(labels.shape)
-
-		# print("trainloader ", trainloader)
-		# print("valloader ", valloader)
-
-		# model.train(x_train, y_train, training_configs, x_valid, y_valid) #TODO
-		# model.evaluate(x_test, y_test) #TODO
-  
-		#trainloader = trainset_load()
-		#valloader = testset_load()
-
-		num_epochs = 2
+		
+		num_epochs = 50
 		for epoch in range(1,num_epochs+1):
-			model.train(epoch, trainloader = trainloader) #TODO
-			model.test(epoch, testloader = valloader) #TODO
+			model.train(epoch, trainloader = trainloader) 
+			model.test(testloader = valloader) 
 
 
 	elif args.mode == 'test':
+
+		#model.load_state_dict(torch.load('../saved_models/model-50.ckpt'))
+		model.load('../saved_models/model-50.ckpt')
 		
 		# Testing on public testing dataset
 		_, _, x_test, y_test = load_data(args.data_dir)
 
 		testloader = transform_val_data(x_test, y_test)
 		
-		# print(x_test.shape, y_test.shape)
-		# print(testloader)
-		num_epochs = 2
-		for epoch in range(1,num_epochs+1):
-			model.test(epoch, testloader = testloader) #TODO
+		model.test(testloader = testloader) 
 
 	elif args.mode == 'predict':
-		data_dir = "../data2024/private_test_images_2024.npy"
+		
+		model.load('../saved_models/model-50.ckpt')
+
 		# Loading private testing dataset
-		x_test = load_testing_images(data_dir)
+		x_test = load_testing_images(args.pred_data_dir)
 		testloader = transform_test_data(x_test)
+
 		# visualizing the first testing image to check your image shape
 		visualize(x_test[0], 'test.png')
+
 		# Predicting and storing results on private testing dataset 
-		#predictions = model.predict_prob(testloader)
-		#np.save(args.result_dir, predictions)
+		predictions = model.predict_prob(testloader)
+
+		os.makedirs(args.result_dir, exist_ok=True)
+		np.save(os.path.join(args.result_dir, "predictions.npy"), predictions)
 		
 
 ### END CODE HERE

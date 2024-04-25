@@ -6,21 +6,6 @@ import torch.nn.functional as F
 """This script defines the network.
 """
 
-
-class MyNetwork(object):
-
-    def __init__(self, configs):
-        #super(MyNetwork, self).__init__()
-        self.configs = configs
-
-    def __call__(self, inputs, training):
-    
-        return self.build_network(inputs, training)
-
-    def build_network(self, inputs, training):
-        return SimpleDLA(self.configs)
-
-
 class BasicBlock(nn.Module):
     expansion = 1
 

@@ -15,13 +15,11 @@ model_configs = config_class({
     "num_classes": 10,
     "learning_rate": 0.01,
     "num_classes": 10,
-    "save_interval": 1
-	# ...
+    "save_interval": 10
 })
 
 training_configs = config_class({
-	"learning_rate": 0.01#,
-	# ...
+	"learning_rate": 0.01
 })
 
 ### END CODE HERE
